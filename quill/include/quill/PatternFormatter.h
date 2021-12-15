@@ -33,7 +33,8 @@
  * Must be used in order to pass the arguments to the set_pattern function
  */
 #define QUILL_STRING(str)                                                                          \
-  [] {                                                                                             \
+  []                                                                                               \
+  {                                                                                                \
     union X                                                                                        \
     {                                                                                              \
       static constexpr auto value() { return str; }                                                \
@@ -119,8 +120,9 @@ private:
     {
       // lambda expand the stored tuple arguments
       auto format_buffer = [this, &memory_buffer, timestamp, thread_id, thread_name, logger_name,
-                            logline_info](auto... tuple_args) {
-        fmt::format_to(std::back_inserter(memory_buffer), _fmt_pattern.data(),
+                            logline_info](auto... tuple_args)
+      {
+        fmt::format_to(std::back_inserter(memory_buffer), fmt::runtime(_fmt_pattern),
                        tuple_args(timestamp, thread_id, thread_name, logger_name, logline_info)...);
       };
 
@@ -393,7 +395,8 @@ void PatternFormatter::format(std::chrono::nanoseconds timestamp, const char* th
                                            logger_name, logline_info);
 
   // Format the user requested string
-  fmt::format_to(std::back_inserter(_formatted_log_record), logline_info.message_format(), args...);
+  fmt::format_to(std::back_inserter(_formatted_log_record),
+                 fmt::runtime(logline_info.message_format()), args...);
 
   // Format part 3 of the pattern
   _pattern_formatter_helper_part_3->format(_formatted_log_record, timestamp, thread_id, thread_name,
