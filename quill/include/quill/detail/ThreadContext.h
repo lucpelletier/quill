@@ -157,7 +157,10 @@ private:
 
 #if defined(QUILL_USE_BOUNDED_QUEUE)
   alignas(CACHELINE_SIZE) std::atomic<size_t> _dropped_message_counter{0};
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-private-field"
   char _pad0[detail::CACHELINE_SIZE - sizeof(std::atomic<size_t>)] = "\0";
+  #pragma GCC diagnostic pop
 #endif
 };
 } // namespace detail
