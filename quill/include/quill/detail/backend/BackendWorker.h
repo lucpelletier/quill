@@ -29,6 +29,7 @@
 #include <cassert>                                         // for assert
 #include <chrono>                                          // for nanoseconds, milli...
 #include <cstdint>                                         // for uint16_t
+#include <cstring>                                         // for memcpy
 #include <exception>                                       // for exception
 #include <functional>                                      // for greater, function
 #include <limits>                                          // for numeric_limits
@@ -385,17 +386,20 @@ void BackendWorker::_deserialize_raw_queue(ThreadContext* thread_context)
     }
 
     // read the next full message
-    auto const timestamp = *(reinterpret_cast<uint64_t const*>(read_buffer));
-    read_buffer += sizeof(uint64_t);
+    uint64_t timestamp;
+    std::memcpy(&timestamp, read_buffer, sizeof(timestamp));
+    read_buffer += sizeof(timestamp);
 
-    auto const serialization_metadata_ptr = *(reinterpret_cast<uintptr_t const*>(read_buffer));
+    uintptr_t serialization_metadata_ptr;
+    std::memcpy(&serialization_metadata_ptr, read_buffer, sizeof(serialization_metadata_ptr));
     auto const serialization_metadata =
       reinterpret_cast<detail::SerializationMetadata const*>(serialization_metadata_ptr);
-    read_buffer += sizeof(uintptr_t);
+    read_buffer += sizeof(serialization_metadata_ptr);
 
-    auto const logger_details_ptr = *(reinterpret_cast<uintptr_t const*>(read_buffer));
+    uintptr_t logger_details_ptr;
+    std::memcpy(&logger_details_ptr, read_buffer, sizeof(logger_details_ptr));
     auto const logger_details = reinterpret_cast<detail::LoggerDetails const*>(logger_details_ptr);
-    read_buffer += sizeof(uintptr_t);
+    read_buffer += sizeof(logger_details_ptr);
 
     // Store all arguments
     fmt::dynamic_format_arg_store<fmt::format_context> fmt_store;
